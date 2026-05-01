@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naqeeb Ahmed | AI & ML Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r158/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --electric-blue: #00d4ff; --deep-violet: #7c3aed; --cosmic-gold: #ffd700; --dark-void: #050510; }
+        body { background: var(--dark-void); color: #e0e0ff; font-family: 'Rajdhani', sans-serif; overflow-x: hidden; min-height: 100vh; }
+        #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+        .holo-nav { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; gap: 10px; padding: 12px 24px; background: rgba(5,5,16,0.6); backdrop-filter: blur(20px); border: 1px solid rgba(0,212,255,0.2); border-radius: 50px; flex-wrap: wrap; justify-content: center; }
+        .nav-pill { padding: 8px 18px; border: 1px solid rgba(0,212,255,0.3); border-radius: 25px; color: #a0a0ff; text-decoration: none; font-family: 'Orbitron', sans-serif; font-size: 0.75rem; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; transition: all 0.3s ease; background: transparent; }
+        .nav-pill:hover, .nav-pill.active { color: var(--electric-blue); border-color: var(--electric-blue); box-shadow: 0 0 20px rgba(0,212,255,0.4); transform: translateY(-2px); }
+        .section { position: relative; min-height: 100vh; display: flex; align-items: center; justify-content: center; z-index: 10; padding: 80px 5%; }
+        .hero-section { min-height: 100vh; flex-direction: column; text-align: center; }
+        .hero-title { font-family: 'Orbitron', sans-serif; font-size: clamp(2.5rem, 8vw, 6rem); font-weight: 900; letter-spacing: 6px; text-transform: uppercase; background: linear-gradient(135deg, var(--electric-blue), var(--deep-violet), var(--cosmic-gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 20px; animation: titlePulse 3s ease-in-out infinite; }
+        @keyframes titlePulse { 0%,100%{filter:brightness(1)} 50%{filter:brightness(1.3)} }
+        .hero-subtitle { font-family: 'Space Mono', monospace; font-size: clamp(0.9rem, 2vw, 1.3rem); color: #a0a0ff; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 30px; }
+        .hero-tagline { font-size: clamp(0.9rem, 1.8vw, 1.1rem); color: rgba(160,160,255,0.8); max-width: 550px; line-height: 1.8; }
+        .scroll-indicator { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 10px; animation: bounce 2s ease-in-out infinite; }
+        .scroll-indicator span { font-family: 'Orbitron', sans-serif; font-size: 0.7rem; letter-spacing: 4px; color: rgba(0,212,255,0.6); }
+        .scroll-line { width: 1px; height: 50px; background: linear-gradient(to bottom, var(--electric-blue), transparent); }
+        @keyframes bounce { 0%,100%{transform:translateX(-50%)translateY(0)} 50%{transform:translateX(-50%)translateY(-10px)} }
+        .about-section { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; max-width: 1200px; margin: 0 auto; }
+        .about-content h2 { font-family: 'Orbitron', sans-serif; font-size: clamp(1.8rem, 3vw, 2.5rem); color: var(--electric-blue); margin-bottom: 20px; letter-spacing: 3px; }
+        .about-text { font-size: 1rem; line-height: 1.8; color: rgba(224,224,255,0.85); margin-bottom: 20px; }
+        .typing-text { font-family: 'Space Mono', monospace; font-size: 0.9rem; color: var(--cosmic-gold); line-height: 1.6; min-height: 100px; }
+        .typing-text .cursor { display: inline-block; width: 2px; height: 1.2em; background: var(--electric-blue); animation: blink 0.8s step-end infinite; vertical-align: text-bottom; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+        .data-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 30px; }
+        .data-card { background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.2); border-radius: 12px; padding: 20px; transition: all 0.3s ease; }
+        .data-card:hover { transform: translateY(-5px); border-color: rgba(0,212,255,0.4); box-shadow: 0 10px 30px rgba(0,212,255,0.1); }
+        .data-card .number { font-family: 'Orbitron', sans-serif; font-size: 2rem; font-weight: 700; color: var(--electric-blue); margin-bottom: 5px; }
+        .data-card .label { font-size: 0.8rem; color: rgba(160,160,255,0.7); text-transform: uppercase; letter-spacing: 1px; }
+        .astronaut-container { position: relative; width: 100%; height: 400px; display: flex; align-items: center; justify-content: center; }
+        .skills-section { text-align: center; max-width: 1200px; margin: 0 auto; }
+        .skills-section h2 { font-family: 'Orbitron', sans-serif; font-size: clamp(1.8rem, 3vw, 2.5rem); color: var(--electric-blue); margin-bottom: 15px; letter-spacing: 3px; }
+        .skills-subtitle { font-size: 1rem; color: rgba(160,160,255,0.7); margin-bottom: 40px; }
+        .skills-orbit { position: relative; width: 100%; height: 500px; display: flex; align-items: center; justify-content: center; }
+        .skill-planet { position: absolute; width: 100px; height: 100px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.3s ease; border: 2px solid; background: rgba(5,5,16,0.8); backdrop-filter: blur(10px); }
+        .skill-planet:hover { transform: scale(1.2); z-index: 50; }
+        .skill-planet .skill-icon { font-size: 1.8rem; margin-bottom: 3px; }
+        .skill-planet .skill-name { font-family: 'Orbitron', sans-serif; font-size: 0.65rem; font-weight: 600; letter-spacing: 1px; }
+        .skill-planet .skill-level { position: absolute; bottom: -25px; font-size: 0.7rem; color: var(--cosmic-gold); opacity: 0; transition: opacity 0.3s ease; }
+        .skill-planet:hover .skill-level { opacity: 1; }
+        .skill-planet.python { border-color: #3776ab; box-shadow: 0 0 20px rgba(55,118,171,0.4); color: #3776ab; }
+        .skill-planet.htmlcss { border-color: #e34c26; box-shadow: 0 0 20px rgba(227,76,38,0.4); color: #e34c26; }
+        .skill-planet.design { border-color: #ff6b9d; box-shadow: 0 0 20px rgba(255,107,157,0.4); color: #ff6b9d; }
+        .skill-planet.office { border-color: #00a4ef; box-shadow: 0 0 20px rgba(0,164,239,0.4); color: #00a4ef; }
+        .skill-planet.ai { border-color: var(--deep-violet); box-shadow: 0 0 20px rgba(124,58,237,0.4); color: var(--deep-violet); }
+        .skill-planet.ml { border-color: var(--cosmic-gold); box-shadow: 0 0 20px rgba(255,215,0,0.4); color: var(--cosmic-gold); }
+        .ai-brain { width: 120px; height: 120px; border: 2px solid var(--electric-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: brainPulse 2s ease-in-out infinite; background: rgba(0,212,255,0.05); }
+        @keyframes brainPulse { 0%,100%{box-shadow:0 0 15px rgba(0,212,255,0.3)} 50%{box-shadow:0 0 30px rgba(0,212,255,0.6)} }
+        .ai-brain svg { width: 60px; height: 60px; }
+        .resume-section { max-width: 1000px; margin: 0 auto; text-align: center; }
+        .resume-section h2 { font-family: 'Orbitron', sans-serif; font-size: clamp(1.8rem, 3vw, 2.5rem); color: var(--electric-blue); margin-bottom: 40px; letter-spacing: 3px; }
+        .timeline { position: relative; padding: 30px 0; }
+        .timeline::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--electric-blue), var(--deep-violet), var(--cosmic-gold)); transform: translateX(-50%); }
+        .timeline-item { position: relative; margin-bottom: 40px; display: flex; align-items: center; }
+        .timeline-item:nth-child(odd) { flex-direction: row-reverse; text-align: right; }
+        .timeline-item:nth-child(even) { text-align: left; }
+        .timeline-content { width: 45%; padding: 25px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.2); border-radius: 16px; transition: all 0.3s ease; position: relative; }
+        .timeline-content::after { content: ''; position: absolute; top: 50%; width: 16px; height: 16px; background: var(--electric-blue); border-radius: 50%; box-shadow: 0 0 15px rgba(0,212,255,0.6); }
+        .timeline-item:nth-child(odd) .timeline-content::after { left: -48px; transform: translateY(-50%); }
+        .timeline-item:nth-child(even) .timeline-content::after { right: -48px; transform: translateY(-50%); }
+        .timeline-content:hover { transform: translateY(-5px); border-color: rgba(0,212,255,0.4); box-shadow: 0 10px 30px rgba(0,212,255,0.1); }
+        .timeline-content h3 { font-family: 'Orbitron', sans-serif; font-size: 1.1rem; color: var(--electric-blue); margin-bottom: 8px; }
+        .timeline-content .date { font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--cosmic-gold); margin-bottom: 10px; display: block; }
+        .timeline-content p { font-size: 0.9rem; color: rgba(224,224,255,0.8); line-height: 1.6; }
+        .download-meteor { display: inline-flex; align-items: center; gap: 10px; padding: 15px 35px; background: linear-gradient(135deg, var(--electric-blue), var(--deep-violet)); border: none; border-radius: 50px; color: #fff; font-family: 'Orbitron', sans-serif; font-size: 0.9rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; margin-top: 30px; transition: all 0.3s ease; text-decoration: none; }
+        .download-meteor:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(0,212,255,0.5); }
+        .contact-section { max-width: 700px; margin: 0 auto; text-align: center; }
+        .contact-section h2 { font-family: 'Orbitron', sans-serif; font-size: clamp(1.8rem, 3vw, 2.5rem); color: var(--electric-blue); margin-bottom: 15px; letter-spacing: 3px; }
+        .contact-subtitle { font-size: 1rem; color: rgba(160,160,255,0.7); margin-bottom: 40px; }
+        .holo-form { background: rgba(0,212,255,0.03); border: 1px solid rgba(0,212,255,0.2); border-radius: 20px; padding: 40px; position: relative; overflow: hidden; }
+        .holo-form::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--electric-blue), var(--deep-violet), var(--cosmic-gold), transparent); }
+        .form-group { margin-bottom: 25px; text-align: left; }
+        .form-group label { display: block; font-family: 'Orbitron', sans-serif; font-size: 0.7rem; letter-spacing: 2px; color: var(--electric-blue); margin-bottom: 10px; text-transform: uppercase; }
+        .form-group input, .form-group textarea { width: 100%; padding: 14px 18px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.2); border-radius: 10px; color: #e0e0ff; font-family: 'Rajdhani', sans-serif; font-size: 1rem; transition: all 0.3s ease; outline: none; }
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--electric-blue); box-shadow: 0 0 15px rgba(0,212,255,0.2); background: rgba(0,212,255,0.08); }
+        .form-group input::placeholder, .form-group textarea::placeholder { color: rgba(160,160,255,0.4); }
+        .form-group textarea { min-height: 120px; resize: vertical; }
+        .submit-rocket { display: inline-flex; align-items: center; gap: 10px; padding: 15px 40px; background: linear-gradient(135deg, var(--electric-blue), var(--deep-violet)); border: none; border-radius: 50px; color: #fff; font-family: 'Orbitron', sans-serif; font-size: 0.9rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.3s ease; }
+        .submit-rocket:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(0,212,255,0.5); }
+        .footer { text-align: center; padding: 40px 20px; border-top: 1px solid rgba(0,212,255,0.1); }
+        .footer p { font-family: 'Space Mono', monospace; font-size: 0.8rem; color: rgba(160,160,255,0.5); letter-spacing: 2px; }
+        .footer .name { color: var(--electric-blue); font-weight: 700; }
+        .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark-void); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: opacity 0.8s ease, visibility 0.8s ease; }
+        .loading-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .loading-text { font-family: 'Orbitron', sans-serif; font-size: 1.2rem; color: var(--electric-blue); letter-spacing: 6px; margin-bottom: 20px; }
+        .loading-bar { width: 250px; height: 3px; background: rgba(0,212,255,0.1); border-radius: 3px; overflow: hidden; }
+        .loading-bar-fill { width: 0%; height: 100%; background: linear-gradient(90deg, var(--electric-blue), var(--deep-violet)); border-radius: 3px; transition: width 0.3s ease; }
+        .loading-percentage { font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--cosmic-gold); margin-top: 10px; }
+        .fallback-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; background: radial-gradient(ellipse at center, #0a0a2e 0%, #050510 100%); pointer-events: none; }
+        .star-fallback { position: absolute; width: 2px; height: 2px; background: #fff; border-radius: 50%; animation: twinkle 3s ease-in-out infinite; }
+        @keyframes twinkle { 0%,100%{opacity:0.3} 50%{opacity:1} }
+        @media (max-width: 968px) { .about-section { grid-template-columns: 1fr; gap: 30px; } .timeline-item, .timeline-item:nth-child(odd) { flex-direction: column; text-align: center; } .timeline-content { width: 90%; } .timeline::before { left: 20px; } .timeline-content::after { left: -30px !important; right: auto !important; } .skills-orbit { height: 400px; } .skill-planet { width: 80px; height: 80px; } .skill-planet .skill-icon { font-size: 1.4rem; } }
+        @media (max-width: 600px) { .holo-form { padding: 25px 15px; } .data-cards { grid-template-columns: 1fr; } .section { padding: 60px 15px; } .holo-nav { padding: 8px 15px; gap: 5px; } .nav-pill { padding: 6px 12px; font-size: 0.65rem; } }
+    </style>
+</head>
+<body>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-text">INITIALIZING UNIVERSE</div>
+        <div class="loading-bar"><div class="loading-bar-fill" id="loadingBarFill"></div></div>
+        <div class="loading-percentage" id="loadingPercentage">0%</div>
+    </div>
+
+    <div id="canvas-container"></div>
+    <div class="fallback-bg" id="fallbackBg"></div>
+    
+    <nav class="holo-nav" id="holoNav">
+        <a href="#hero" class="nav-pill active" data-section="hero">Home</a>
+        <a href="#about" class="nav-pill" data-section="about">About</a>
+        <a href="#skills" class="nav-pill" data-section="skills">Skills</a>
+        <a href="#resume" class="nav-pill" data-section="resume">Resume</a>
+        <a href="#contact" class="nav-pill" data-section="contact">Contact</a>
+    </nav>
+    
+    <section class="section hero-section" id="hero">
+        <h1 class="hero-title">Naqeeb Ahmed</h1>
+        <p class="hero-subtitle">AI & Machine Learning Engineer</p>
+        <p class="hero-tagline">Crafting intelligent systems that push the boundaries of what's possible. Exploring the cosmos of artificial intelligence, one algorithm at a time.</p>
+        <div class="scroll-indicator"><span>SCROLL</span><div class="scroll-line"></div></div>
+    </section>
+    
+    <section class="section" id="about">
+        <div class="about-section">
+            <div class="about-content">
+                <h2>About Me</h2>
+                <p class="about-text">I'm a Computer Science student with an unwavering passion for Artificial Intelligence and Machine Learning. My journey through the digital cosmos has equipped me with the skills to build intelligent systems that learn, adapt, and evolve.</p>
+                <div class="typing-text" id="typingText"><span id="typedText"></span><span class="cursor">|</span></div>
+                <div class="data-cards">
+                    <div class="data-card"><div class="number">5+</div><div class="label">Years Coding</div></div>
+                    <div class="data-card"><div class="number">20+</div><div class="label">Projects Built</div></div>
+                    <div class="data-card"><div class="number">3</div><div class="label">AI Models Deployed</div></div>
+                    <div class="data-card"><div class="number">∞</div><div class="label">Curiosity Level</div></div>
+                </div>
+            </div>
+            <div class="astronaut-container" id="astronautContainer"></div>
+        </div>
+    </section>
+    
+    <section class="section" id="skills">
+        <div class="skills-section">
+            <h2>My Skill Universe</h2>
+            <p class="skills-subtitle">Click and drag the planets to explore my capabilities</p>
+            <div class="skills-orbit" id="skillsOrbit">
+                <div class="ai-brain" id="aiBrain">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/></svg>
+                </div>
+                <div class="skill-planet python" data-skill="Python"><span class="skill-icon">🐍</span><span class="skill-name">Python</span><span class="skill-level">Expert</span></div>
+                <div class="skill-planet htmlcss" data-skill="HTML/CSS"><span class="skill-icon">🌐</span><span class="skill-name">HTML/CSS</span><span class="skill-level">Advanced</span></div>
+                <div class="skill-planet design" data-skill="Design"><span class="skill-icon">🎨</span><span class="skill-name">Design</span><span class="skill-level">Intermediate</span></div>
+                <div class="skill-planet office" data-skill="MS Office"><span class="skill-icon">📊</span><span class="skill-name">MS Office</span><span class="skill-level">Advanced</span></div>
+                <div class="skill-planet ai" data-skill="AI/ML"><span class="skill-icon">🤖</span><span class="skill-name">AI/ML</span><span class="skill-level">Intermediate</span></div>
+                <div class="skill-planet ml" data-skill="Deep Learning"><span class="skill-icon">🧠</span><span class="skill-name">Deep Learning</span><span class="skill-level">Learning</span></div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="section" id="resume">
+        <div class="resume-section">
+            <h2>Journey Through Space</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h3>🎓 Education</h3>
+                        <span class="date">2022 - Present</span>
+                        <p>Bachelor of Science in Computer Science, specializing in Artificial Intelligence and Machine Learning.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h3>💻 Technical Skills</h3>
+                        <span class="date">Continuous Learning</span>
+                        <p>Proficient in Python, HTML/CSS, JavaScript. Experienced with TensorFlow, PyTorch, scikit-learn.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h3>🚀 Future Goals</h3>
+                        <span class="date">The Horizon Ahead</span>
+                        <p>Master advanced neural architectures. Contribute to open-source AI projects. Build accessible AI products.</p>
+                    </div>
+                </div>
+            </div>
+            <a href="#" class="download-meteor" onclick="event.preventDefault(); handleDownload();"><span>☄️</span><span>Download CV</span></a>
+        </div>
+    </section>
+    
+    <section class="section" id="contact">
+        <div class="contact-section">
+            <h2>Establish Connection</h2>
+            <p class="contact-subtitle">Send a transmission across the digital cosmos</p>
+            <form class="holo-form" onsubmit="event.preventDefault(); handleSubmit();">
+                <div class="form-group"><label>Your Designation</label><input type="text" placeholder="Enter your name" required></div>
+                <div class="form-group"><label>Communication Channel</label><input type="email" placeholder="your@email.com" required></div>
+                <div class="form-group"><label>Transmission Content</label><textarea placeholder="Type your message here..." required></textarea></div>
+                <button type="submit" class="submit-rocket"><span>🚀</span><span>Launch Message</span></button>
+            </form>
+        </div>
+    </section>
+    
+    <footer class="footer"><p>Built with <span class="name">cosmic precision</span> by Naqeeb Ahmed | &copy; 2026</p></footer>
+
+    <script>
+        // ===== AUTO-SKIP LOADING AFTER 3 SECONDS =====
+        const loadingScreen = document.getElementById('loadingScreen');
+        const loadingBarFill = document.getElementById('loadingBarFill');
+        const loadingPercentage = document.getElementById('loadingPercentage');
+        let loadProgress = 0;
+        
+        function updateLoad(p) {
+            loadProgress = Math.min(p, 100);
+            loadingBarFill.style.width = loadProgress + '%';
+            loadingPercentage.textContent = Math.round(loadProgress) + '%';
+            if (loadProgress >= 100) setTimeout(() => loadingScreen.classList.add('hidden'), 400);
+        }
+        
+        // Fast fake progress
+        let progressInterval = setInterval(() => {
+            if (loadProgress < 90) updateLoad(loadProgress + Math.random() * 15);
+        }, 200);
+        
+        // FORCE COMPLETE after 3 seconds no matter what
+        setTimeout(() => {
+            clearInterval(progressInterval);
+            updateLoad(100);
+        }, 3000);
+        
+        // ===== FALLBACK STARS =====
+        function createFallbackStars() {
+            const bg = document.getElementById('fallbackBg');
+            for (let i = 0; i < 80; i++) {
+                const star = document.createElement('div');
+                star.className = 'star-fallback';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                star.style.width = (Math.random() * 3 + 1) + 'px';
+                star.style.height = star.style.width;
+                bg.appendChild(star);
+            }
+        }
+        createFallbackStars();
+        
+        // ===== THREE.JS (with error catch) =====
+        let scene, camera, renderer, blackHole, accretionDisk, stars, nebula, planet, asteroids = [];
+        let mouseX = 0, mouseY = 0, targetMouseX = 0, targetMouseY = 0, scrollY = 0;
+        let blackHoleRotation = { x: 0, y: 0 }, time = 0, shootingStars = [], lastShootingStarTime = 0;
+        
+        function initThreeJS() {
+            try {
+                if (typeof THREE === 'undefined') throw new Error('Three.js not loaded');
+                const container = document.getElementById('canvas-container');
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+                camera.position.set(0, 0, 30);
+                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                container.appendChild(renderer.domElement);
+                
+                createStarField(); createBlackHole(); createNebula(); createPlanet(); createAsteroids();
+                
+                scene.add(new THREE.AmbientLight(0x1a1a3a, 0.5));
+                const pl = new THREE.PointLight(0x00d4ff, 2, 100); pl.position.set(0,0,0); scene.add(pl);
+                const vl = new THREE.PointLight(0x7c3aed, 1, 80); vl.position.set(-20,10,-10); scene.add(vl);
+                const gl = new THREE.PointLight(0xffd700, 0.8, 60); gl.position.set(20,-10,-5); scene.add(gl);
+                
+                window.addEventListener('resize', () => {
+                    if (!camera || !renderer) return;
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                });
+                
+                animate();
+            } catch (e) {
+                console.log('3D not available, using fallback');
+                document.getElementById('canvas-container').style.display = 'none';
+            }
+        }
+        
+        function createStarField() {
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(5000 * 3);
+            const colors = new Float32Array(5000 * 3);
+            const palette = [new THREE.Color(0xffffff), new THREE.Color(0x00d4ff), new THREE.Color(0x7c3aed), new THREE.Color(0xffd700)];
+            for (let i = 0; i < 5000; i++) {
+                const i3 = i * 3, r = 200 + Math.random() * 800, t = Math.random() * Math.PI * 2, p = Math.acos(2 * Math.random() - 1);
+                positions[i3] = r * Math.sin(p) * Math.cos(t);
+                positions[i3+1] = r * Math.sin(p) * Math.sin(t);
+                positions[i3+2] = r * Math.cos(p);
+                const c = palette[Math.floor(Math.random() * palette.length)];
+                colors[i3] = c.r; colors[i3+1] = c.g; colors[i3+2] = c.b;
+            }
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            stars = new THREE.Points(geometry, new THREE.PointsMaterial({ size: 1.5, vertexColors: true, transparent: true, opacity: 0.8, sizeAttenuation: true, blending: THREE.AdditiveBlending }));
+            scene.add(stars);
+        }
+        
+        function createBlackHole() {
+            blackHole = new THREE.Group();
+            blackHole.add(new THREE.Mesh(new THREE.SphereGeometry(3, 32, 32), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.95 })));
+            
+            const photonRing = new THREE.Mesh(new THREE.TorusGeometry(4.5, 0.3, 16, 64), new THREE.MeshBasicMaterial({ color: 0x00d4ff, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending }));
+            photonRing.rotation.x = Math.PI / 2; blackHole.add(photonRing);
+            
+            const diskMaterial = new THREE.ShaderMaterial({
+                uniforms: { time: { value: 0 }, color1: { value: new THREE.Color(0x00d4ff) }, color2: { value: new THREE.Color(0x7c3aed) }, color3: { value: new THREE.Color(0xffd700) } },
+                vertexShader: `varying vec2 vUv; varying float vDist; void main() { vUv = uv; vDist = length(position.xy); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+                fragmentShader: `uniform float time; uniform vec3 color1, color2, color3; varying vec2 vUv; varying float vDist; void main() { float angle = atan(vUv.y - 0.5, vUv.x - 0.5) + time * 0.5; float spiral = sin(angle * 3.0 + vDist * 2.0) * 0.5 + 0.5; float radial = smoothstep(0.0, 0.3, vUv.x) * smoothstep(1.0, 0.7, vUv.x); vec3 color = mix(color1, color2, spiral); color = mix(color, color3, sin(time + vDist) * 0.3 + 0.3); float alpha = radial * (0.6 + spiral * 0.4); gl_FragColor = vec4(color * alpha * 1.5, alpha); }`,
+                transparent: true, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false
+            });
+            accretionDisk = new THREE.Mesh(new THREE.RingGeometry(5, 15, 32, 1, 0, Math.PI * 2), diskMaterial);
+            accretionDisk.rotation.x = Math.PI / 2; blackHole.add(accretionDisk);
+            
+            const pGeo = new THREE.BufferGeometry(), pPos = new Float32Array(1000 * 3), pCol = new Float32Array(1000 * 3);
+            for (let i = 0; i < 1000; i++) {
+                const i3 = i * 3, a = Math.random() * Math.PI * 2, r = 5 + Math.random() * 10;
+                pPos[i3] = Math.cos(a) * r; pPos[i3+1] = (Math.random() - 0.5) * 0.5; pPos[i3+2] = Math.sin(a) * r;
+                const t = Math.random(), c1 = new THREE.Color(0x00d4ff), c2 = new THREE.Color(0xffd700), c = c1.clone().lerp(c2, t);
+                pCol[i3] = c.r; pCol[i3+1] = c.g; pCol[i3+2] = c.b;
+            }
+            pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+            pGeo.setAttribute('color', new THREE.BufferAttribute(pCol, 3));
+            const pRing = new THREE.Points(pGeo, new THREE.PointsMaterial({ size: 0.15, vertexColors: true, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending }));
+            blackHole.add(pRing); blackHole.userData.particleRing = pRing;
+            
+            const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 128;
+            const ctx = canvas.getContext('2d'); ctx.fillStyle = 'transparent'; ctx.fillRect(0, 0, 512, 128);
+            ctx.font = 'bold 48px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.shadowColor = '#00d4ff'; ctx.shadowBlur = 20; ctx.fillStyle = '#00d4ff'; ctx.fillText('NAQEEB AHMED', 256, 64);
+            const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending }));
+            sprite.scale.set(12, 3, 1); sprite.position.set(0, 0, 18); blackHole.add(sprite); blackHole.userData.nameSprite = sprite;
+            scene.add(blackHole);
+        }
+        
+        function createNebula() {
+            const mat = new THREE.ShaderMaterial({
+                uniforms: { time: { value: 0 } },
+                vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+                fragmentShader: `uniform float time; varying vec2 vUv; float noise(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); } float smoothNoise(vec2 p) { vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f); float a = noise(i), b = noise(i + vec2(1.0, 0.0)), c = noise(i + vec2(0.0, 1.0)), d = noise(i + vec2(1.0, 1.0)); return mix(mix(a, b, f.x), mix(c, d, f.x), f.y); } float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { v += a * smoothNoise(p); p *= 2.0; a *= 0.5; } return v; } void main() { float n = fbm(vUv * 3.0 + time * 0.1); vec3 c = mix(vec3(0.0, 0.83, 1.0), vec3(0.49, 0.23, 0.93), n); c = mix(c, vec3(1.0, 0.84, 0.0), fbm(vUv * 2.0 - time * 0.05) * 0.5); gl_FragColor = vec4(c, n * 0.15); }`,
+                transparent: true, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false
+            });
+            nebula = new THREE.Mesh(new THREE.PlaneGeometry(100, 100, 16, 16), mat);
+            nebula.position.set(-50, 20, -80); nebula.rotation.z = 0.3; scene.add(nebula);
+            const n2 = nebula.clone(); n2.position.set(60, -30, -100); n2.rotation.z = -0.5; n2.material = mat.clone(); n2.material.uniforms.time = mat.uniforms.time; scene.add(n2);
+        }
+        
+        function createPlanet() {
+            planet = new THREE.Group();
+            planet.add(new THREE.Mesh(new THREE.SphereGeometry(8, 32, 32), new THREE.MeshStandardMaterial({ color: 0xc4a35a, roughness: 0.7, metalness: 0.2, emissive: 0x221100, emissiveIntensity: 0.2 })));
+            const ringMat = new THREE.ShaderMaterial({
+                uniforms: { time: { value: 0 } },
+                vertexShader: `varying vec2 vUv; varying float vRadius; void main() { vUv = uv; vRadius = length(position.xy); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+                fragmentShader: `uniform float time; varying vec2 vUv; varying float vRadius; void main() { float s = sin(vRadius * 20.0 + time) * 0.5 + 0.5; vec3 c = mix(vec3(0.77, 0.64, 0.35), vec3(0.5, 0.4, 0.2), s); float a = smoothstep(10.0, 11.0, vRadius) * smoothstep(16.0, 15.0, vRadius) * 0.6; gl_FragColor = vec4(c, a); }`,
+                transparent: true, side: THREE.DoubleSide, blending: THREE.AdditiveBlending
+            });
+            const ring = new THREE.Mesh(new THREE.RingGeometry(10, 16, 64), ringMat);
+            ring.rotation.x = Math.PI / 2.5; planet.add(ring); planet.userData.ring = ring;
+            planet.position.set(60, -20, -60); scene.add(planet);
+        }
+        
+        function createAsteroids() {
+            const geos = [new THREE.DodecahedronGeometry(0.5, 0), new THREE.IcosahedronGeometry(0.7, 0), new THREE.OctahedronGeometry(0.6, 0)];
+            for (let i = 0; i < 15; i++) {
+                const mesh = new THREE.Mesh(geos[Math.floor(Math.random() * 3)], new THREE.MeshStandardMaterial({ color: new THREE.Color().setHSL(0.05 + Math.random() * 0.1, 0.3, 0.3 + Math.random() * 0.2), roughness: 0.9, metalness: 0.1 }));
+                mesh.position.set((Math.random() - 0.5) * 100, (Math.random() - 0.5) * 60, -20 - Math.random() * 80);
+                mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+                mesh.userData = { rotSpeed: { x: (Math.random() - 0.5) * 0.02, y: (Math.random() - 0.5) * 0.02, z: (Math.random() - 0.5) * 0.02 } };
+                scene.add(mesh); asteroids.push(mesh);
+            }
+        }
+        
+        function createShootingStar() {
+            const geo = new THREE.BufferGeometry(), pos = new Float32Array(20 * 3), col = new Float32Array(20 * 3);
+            const sx = (Math.random() - 0.5) * 100, sy = 30 + Math.random() * 20, sz = -30 - Math.random() * 50;
+            const ex = sx + (Math.random() - 0.5) * 40, ey = sy - 20 - Math.random() * 20, ez = sz - 20 - Math.random() * 30;
+            for (let i = 0; i < 20; i++) {
+                const t = i / 19; pos[i*3] = sx + (ex-sx)*t; pos[i*3+1] = sy + (ey-sy)*t; pos[i*3+2] = sz + (ez-sz)*t;
+                col[i*3] = 1.0; col[i*3+1] = 0.9; col[i*3+2] = 0.6;
+            }
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+            const ss = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.8, vertexColors: true, transparent: true, opacity: 1, blending: THREE.AdditiveBlending }));
+            ss.userData = { life: 1.0, speed: 0.02 + Math.random() * 0.03 }; scene.add(ss); shootingStars.push(ss);
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate); time += 0.016;
+            mouseX += (targetMouseX - mouseX) * 0.05; mouseY += (targetMouseY - mouseY) * 0.05;
+            camera.position.x = mouseX * 3; camera.position.y = mouseY * 2; camera.lookAt(0, 0, 0);
+            camera.position.z = 30 + Math.min(scrollY / window.innerHeight, 2) * 10;
+            
+            if (blackHole) {
+                blackHole.rotation.x = blackHoleRotation.x; blackHole.rotation.y = blackHoleRotation.y + time * 0.1;
+                if (accretionDisk) { accretionDisk.material.uniforms.time.value = time; accretionDisk.rotation.z = time * 0.3; }
+                if (blackHole.userData.particleRing) blackHole.userData.particleRing.rotation.y = time * 0.5;
+                if (blackHole.userData.nameSprite) {
+                    const r = 20; blackHole.userData.nameSprite.position.x = Math.cos(time * 0.3) * r;
+                    blackHole.userData.nameSprite.position.z = Math.sin(time * 0.3) * r + 18;
+                    blackHole.userData.nameSprite.position.y = Math.sin(time * 0.2) * 3;
+                    blackHole.userData.nameSprite.lookAt(camera.position);
+                }
+            }
+            if (stars) { stars.rotation.y = mouseX * 0.02; stars.rotation.x = mouseY * 0.02; }
+            if (nebula) { nebula.material.uniforms.time.value = time; nebula.rotation.z = 0.3 + Math.sin(time * 0.1) * 0.05; }
+            if (planet) { planet.rotation.y = time * 0.05; if (planet.userData.ring) planet.userData.ring.material.uniforms.time.value = time; }
+            asteroids.forEach(a => { a.rotation.x += a.userData.rotSpeed.x; a.rotation.y += a.userData.rotSpeed.y; a.rotation.z += a.userData.rotSpeed.z; a.position.y += Math.sin(time + a.id) * 0.01; });
+            
+            if (time - lastShootingStarTime > 3 + Math.random() * 4) { createShootingStar(); lastShootingStarTime = time; }
+            for (let i = shootingStars.length - 1; i >= 0; i--) {
+                const ss = shootingStars[i]; ss.userData.life -= ss.userData.speed; ss.material.opacity = ss.userData.life;
+                const p = ss.geometry.attributes.position.array; for (let j = 0; j < p.length; j += 3) p[j+2] -= 0.5;
+                ss.geometry.attributes.position.needsUpdate = true;
+                if (ss.userData.life <= 0) { scene.remove(ss); shootingStars.splice(i, 1); }
+            }
+            renderer.render(scene, camera);
+        }
+        
+        document.addEventListener('mousemove', (e) => { targetMouseX = (e.clientX / window.innerWidth) * 2 - 1; targetMouseY = -(e.clientY / window.innerHeight) * 2 + 1; });
+        window.addEventListener('scroll', () => scrollY = window.scrollY);
+        
+        // ===== GSAP =====
+        function initGSAP() {
+            if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
+            gsap.registerPlugin(ScrollTrigger);
+            gsap.from('.hero-title', { opacity: 0, y: 100, duration: 1.5, ease: 'power3.out', delay: 1.5 });
+            gsap.from('.hero-subtitle', { opacity: 0, y: 50, duration: 1.2, ease: 'power3.out', delay: 2 });
+            gsap.from('.hero-tagline', { opacity: 0, y: 30, duration: 1, ease: 'power3.out', delay: 2.3 });
+            gsap.from('.scroll-indicator', { opacity: 0, duration: 1, ease: 'power2.out', delay: 3 });
+            gsap.from('.about-content h2', { scrollTrigger: { trigger: '#about', start: 'top 80%' }, opacity: 0, x: -50, duration: 1, ease: 'power3.out' });
+            gsap.from('.about-text', { scrollTrigger: { trigger: '#about', start: 'top 70%' }, opacity: 0, y: 30, duration: 1, delay: 0.2, ease: 'power3.out' });
+            gsap.from('.data-card', { scrollTrigger: { trigger: '.data-cards', start: 'top 80%' }, opacity: 0, y: 40, duration: 0.8, stagger: 0.15, ease: 'power3.out' });
+            gsap.from('.skills-section h2', { scrollTrigger: { trigger: '#skills', start: 'top 80%' }, opacity: 0, y: 50, duration: 1, ease: 'power3.out' });
+            gsap.from('.resume-section h2', { scrollTrigger: { trigger: '#resume', start: 'top 80%' }, opacity: 0, y: 50, duration: 1, ease: 'power3.out' });
+            gsap.from('.timeline-item', { scrollTrigger: { trigger: '.timeline', start: 'top 80%' }, opacity: 0, y: 60, duration: 1, stagger: 0.3, ease: 'power3.out' });
+            gsap.from('.contact-section h2', { scrollTrigger: { trigger: '#contact', start: 'top 80%' }, opacity: 0, y: 50, duration: 1, ease: 'power3.out' });
+            gsap.from('.holo-form', { scrollTrigger: { trigger: '.holo-form', start: 'top 80%' }, opacity: 0, y: 40, duration: 1, ease: 'power3.out' });
+        }
+        
+        // ===== TYPING =====
+        function initTyping() {
+            const text = "I believe in the power of AI to transform our world. Every line of code I write is a step toward building intelligent systems that can understand, learn, and create. From neural networks to natural language processing, I'm exploring the frontiers of what's possible.";
+            const el = document.getElementById('typedText'); let i = 0;
+            const obs = new IntersectionObserver((entries) => { entries.forEach(e => { if (e.isIntersecting && i === 0) type(); }); }, { threshold: 0.5 });
+            obs.observe(document.getElementById('typingText'));
+            function type() { if (i < text.length) { el.textContent += text.charAt(i); i++; setTimeout(type, 30 + Math.random() * 50); } }
+        }
+        
+        // ===== NAV =====
+        function initNav() {
+            const pills = document.querySelectorAll('.nav-pill');
+            const sections = document.querySelectorAll('.section');
+            pills.forEach(p => p.addEventListener('click', (e) => { e.preventDefault(); document.querySelector(p.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' }); }));
+            window.addEventListener('scroll', () => {
+                let cur = ''; sections.forEach(s => { if (window.scrollY >= s.offsetTop - s.clientHeight / 3) cur = s.getAttribute('id'); });
+                pills.forEach(p => { p.classList.toggle('active', p.getAttribute('data-section') === cur); });
+            });
+        }
+        
+        // ===== SKILL PLANETS =====
+        function initSkills() {
+            const planets = document.querySelectorAll('.skill-planet');
+            const orbit = document.getElementById('skillsOrbit');
+            const cx = orbit.offsetWidth / 2, cy = orbit.offsetHeight / 2, r = 180;
+            let dragging = false, dragged = null, dragOff = { x: 0, y: 0 }, vel = { x: 0, y: 0 };
+            
+            planets.forEach((p, i) => {
+                const a = (i / planets.length) * Math.PI * 2;
+                p.style.left = (cx + Math.cos(a) * r - 50) + 'px';
+                p.style.top = (cy + Math.sin(a) * r * 0.4 - 50) + 'px';
+                
+                p.addEventListener('mousedown', (e) => { dragging = true; dragged = p; dragOff.x = e.clientX - p.getBoundingClientRect().left; dragOff.y = e.clientY - p.getBoundingClientRect().top; vel = { x: 0, y: 0 }; p.style.transition = 'none'; p.style.zIndex = '100'; });
+                p.addEventListener('mouseenter', () => { if (!dragging) p.style.transform = 'scale(1.2)'; });
+                p.addEventListener('mouseleave', () => { if (!dragging) p.style.transform = 'scale(1)'; });
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (!dragging || !dragged) return;
+                const o = orbit.getBoundingClientRect();
+                const nx = e.clientX - o.left - dragOff.x, ny = e.clientY - o.top - dragOff.y;
+                vel.x = nx - parseFloat(dragged.style.left || 0); vel.y = ny - parseFloat(dragged.style.top || 0);
+                dragged.style.left = nx + 'px'; dragged.style.top = ny + 'px';
+            });
+            
+            document.addEventListener('mouseup', () => {
+                if (!dragging || !dragged) return;
+                dragging = false; dragged.style.transition = 'all 0.5s ease'; dragged.style.zIndex = '';
+                const cl = parseFloat(dragged.style.left || 0), ct = parseFloat(dragged.style.top || 0);
+                dragged.style.left = (cl + vel.x * 30) + 'px'; dragged.style.top = (ct + vel.y * 30) + 'px';
+                dragged = null;
+            });
+            
+            function orbitAnim() {
+                if (!dragging) {
+                    planets.forEach((p, i) => {
+                        if (p === dragged) return;
+                        const t = (Date.now() / 1000 / (20 + i * 3) + i / planets.length) % 1;
+                        const a = t * Math.PI * 2;
+                        p.style.left = (cx + Math.cos(a) * r - 50) + 'px';
+                        p.style.top = (cy + Math.sin(a) * r * 0.4 - 50) + 'px';
+                    });
+                }
+                requestAnimationFrame(orbitAnim);
+            }
+            orbitAnim();
+        }
+        
+        // ===== ASTRONAUT =====
+        function initAstronaut() {
+            const container = document.getElementById('astronautContainer');
+            if (typeof THREE === 'undefined') { container.innerHTML = '<div style="color:#00d4ff;font-family:Orbitron;font-size:1.5rem;">🚀<br>3D Space</div>'; return; }
+            const s = new THREE.Scene(), c = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+            c.position.z = 5; const r = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            r.setSize(350, 350); r.setPixelRatio(Math.min(window.devicePixelRatio, 2)); container.appendChild(r.domElement);
+            
+            const astro = new THREE.Group();
+            astro.add(new THREE.Mesh(new THREE.SphereGeometry(1.2, 32, 32), new THREE.MeshStandardMaterial({ color: 0xeeeeee, roughness: 0.3, metalness: 0.5 })));
+            const visor = new THREE.Mesh(new THREE.SphereGeometry(1.0, 32, 32, 0, Math.PI * 2, 0, Math.PI * 0.35), new THREE.MeshStandardMaterial({ color: 0x111122, roughness: 0.1, metalness: 0.9, emissive: 0x001133, emissiveIntensity: 0.3 }));
+            visor.rotation.x = -Math.PI / 2; visor.position.z = 0.3; astro.add(visor);
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 1.0, 1.5, 32), new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.4, metalness: 0.4 }));
+            body.position.y = -1.5; astro.add(body);
+            
+            s.add(new THREE.AmbientLight(0x404040, 0.5));
+            const dl = new THREE.DirectionalLight(0x00d4ff, 1); dl.position.set(5, 5, 5); s.add(dl);
+            const bl = new THREE.DirectionalLight(0x7c3aed, 0.5); bl.position.set(-5, -5, -5); s.add(bl);
+            s.add(astro);
+            
+            let mx = 0, my = 0, tx = 0, ty = 0, drag = false;
+            container.addEventListener('mousemove', (e) => { const rect = container.getBoundingClientRect(); tx = ((e.clientX - rect.left) / rect.width) * 2 - 1; ty = -((e.clientY - rect.top) / rect.height) * 2 + 1; });
+            container.addEventListener('mousedown', () => drag = true); container.addEventListener('mouseup', () => drag = false);
+            
+            function anim() {
+                requestAnimationFrame(anim); mx += (tx - mx) * 0.05; my += (ty - my) * 0.05;
+                astro.rotation.y = mx * 0.5; astro.rotation.x = my * 0.3; astro.position.y = Math.sin(Date.now() * 0.001) * 0.1;
+                if (drag) astro.rotation.y += 0.02; r.render(s, c);
+            }
+            anim();
+        }
+        
+        // ===== DOWNLOAD & SUBMIT =====
+        function handleDownload() {
+            const cv = `NAQEEB AHMED - CV\n==================\n\nPERSONAL INFO\nName: Naqeeb Ahmed\nField: Computer Science\nSpecialization: AI & Machine Learning\n\nEDUCATION\nBS Computer Science (AI & ML)\n2022 - Present\n\nSKILLS\n• Python (Expert)\n• HTML/CSS (Advanced)\n• Graphic Design (Intermediate)\n• MS Office (Advanced)\n• AI/ML (Intermediate)\n• Deep Learning (Learning)\n\nPROJECTS\n• 20+ Projects Built\n• 3 AI Models Deployed\n\nGOALS\n• Master neural architectures\n• Contribute to open-source AI\n• Build accessible AI products\n\nGenerated: 2026`;
+            const blob = new Blob([cv], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'Naqeeb_Ahmed_CV.txt';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+        }
+        
+        function handleSubmit() {
+            const btn = document.querySelector('.submit-rocket');
+            btn.style.transform = 'translateY(-100vh) scale(0.5)'; btn.style.opacity = '0';
+            setTimeout(() => {
+                btn.style.transform = 'translateY(0) scale(1)'; btn.style.opacity = '1';
+                const msg = document.createElement('div');
+                msg.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.5);border-radius:20px;padding:25px 40px;color:#00d4ff;font-family:Orbitron,sans-serif;font-size:1.1rem;z-index:10000;backdrop-filter:blur(10px);box-shadow:0 0 40px rgba(0,212,255,0.3);';
+                msg.innerHTML = '🚀 Message Launched!<br><span style="font-size:0.75rem;color:#a0a0ff;">Transmission received</span>';
+                document.body.appendChild(msg);
+                setTimeout(() => { msg.style.opacity = '0'; setTimeout(() => msg.remove(), 500); }, 2000);
+            }, 1000);
+        }
+        
+        // ===== INIT EVERYTHING =====
+        document.addEventListener('DOMContentLoaded', () => {
+            initThreeJS();
+            setTimeout(initGSAP, 500);
+            initTyping();
+            initNav();
+            initSkills();
+            setTimeout(initAstronaut, 800);
+            
+            document.querySelectorAll('.data-card').forEach(card => {
+                const obs = new IntersectionObserver((entries) => {
+                    entries.forEach(e => {
+                        if (!e.isIntersecting) return;
+                        const n = e.target.querySelector('.number'), t = n.textContent;
+                        if (t !== '∞' && !isNaN(parseInt(t))) {
+                            const target = parseInt(t); let cur = 0;
+                            const int = setInterval(() => { cur += target / 40; if (cur >= target) { n.textContent = t; clearInterval(int); } else n.textContent = Math.floor(cur) + '+'; }, 25);
+                        }
+                        obs.unobserve(e.target);
+                    });
+                }, { threshold: 0.5 }); obs.observe(card);
+            });
+        });
+    </script>
+</body>
+</html>
